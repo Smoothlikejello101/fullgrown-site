@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FullGrown Garden Planner</title>
+<meta name="description" content="Plan a garden that actually works: every plant drawn at its full-grown size on your own yard, with facts you can check. Coming soon.">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ede0c8;
+    --paper-deep: #e3d3b4;
+    --grid: rgba(120, 90, 50, 0.13);
+    --grid-major: rgba(120, 90, 50, 0.24);
+    --ink: #2b2118;
+    --ink-soft: #5e4f3f;
+    --leaf: #16a34a;
+    --leaf-deep: #166534;
+    --teal: #14b8a6;
+    --bed: #78350f;
+    --card: rgba(255, 252, 244, 0.72);
+    --line: rgba(80, 60, 30, 0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1d1913;
+      --paper-deep: #26211a;
+      --grid: rgba(237, 224, 200, 0.06);
+      --grid-major: rgba(237, 224, 200, 0.12);
+      --ink: #f1e8d6;
+      --ink-soft: #c2b49c;
+      --leaf: #22c55e;
+      --leaf-deep: #86efac;
+      --teal: #2dd4bf;
+      --bed: #a16207;
+      --card: rgba(43, 37, 29, 0.78);
+      --line: rgba(237, 224, 200, 0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1d1913; --paper-deep: #26211a; --grid: rgba(237, 224, 200, 0.06); --grid-major: rgba(237, 224, 200, 0.12);
+    --ink: #f1e8d6; --ink-soft: #c2b49c; --leaf: #22c55e; --leaf-deep: #86efac; --teal: #2dd4bf; --bed: #a16207;
+    --card: rgba(43, 37, 29, 0.78); --line: rgba(237, 224, 200, 0.14);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font: 400 17px/1.6 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    /* A planner's grid: a fine line every foot, a heavier one every five. */
+    background-image:
+      linear-gradient(var(--grid-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 48px; }
+  header { display: flex; align-items: center; gap: 10px; }
+  .mark { width: 34px; height: 34px; border-radius: 8px; box-shadow: 0 0 0 1px var(--line); }
+  .word { font: 650 22px/1 Fraunces, Georgia, serif; letter-spacing: -0.01em; }
+  .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; padding: 56px 0 40px; }
+  .tag {
+    display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--leaf-deep); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+  }
+  h1 { font: 500 clamp(38px, 6vw, 62px)/1.04 Fraunces, Georgia, serif; letter-spacing: -0.02em; margin: 18px 0 18px; text-wrap: balance; }
+  .lede { font-size: 19px; color: var(--ink-soft); max-width: 34em; margin: 0; }
+  .plan { width: 100%; height: auto; display: block; filter: drop-shadow(0 10px 24px rgba(60, 40, 10, 0.18)); }
+  .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0 40px; }
+  .point { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 20px 18px; backdrop-filter: blur(2px); }
+  .point h2 { font: 600 17px/1.3 Inter, sans-serif; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .point p { margin: 0; font-size: 15.5px; color: var(--ink-soft); }
+  .partners { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--leaf); border-radius: 14px; padding: 22px 24px; max-width: 760px; }
+  .partners h2 { font: 500 24px/1.2 Fraunces, Georgia, serif; margin: 0 0 8px; }
+  .partners p { margin: 0 0 10px; color: var(--ink-soft); font-size: 16px; }
+  .partners p:last-child { margin-bottom: 0; }
+  a { color: var(--leaf-deep); font-weight: 600; text-underline-offset: 3px; }
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 6px 18px; justify-content: space-between; }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 16px 36px; }
+    .hero { grid-template-columns: 1fr; gap: 28px; padding: 36px 0 28px; }
+    .plan { max-width: 420px; margin: 0 auto; }
+    .points { grid-template-columns: 1fr; }
+    .lede { font-size: 17.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img class="mark" src="icon.png" alt="" width="34" height="34">
+    <span class="word">FullGrown</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="tag">Coming soon</span>
+        <h1>Plan a garden that actually works.</h1>
+        <p class="lede">FullGrown draws every plant at its full-grown size, to scale, on your own yard, so you can see in March what your beds will look like in five years. Every fact behind it says where it came from.</p>
+      </div>
+      <svg class="plan" viewBox="0 0 400 320" role="img" aria-label="A garden plan seen from above: a house, a curved bed, and plants drawn as circles at their mature spread, with a twenty-foot scale bar.">
+        <defs>
+          <pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="rgba(120,90,50,.18)" stroke-width="1"/></pattern>
+        </defs>
+        <rect x="0" y="0" width="400" height="320" rx="16" fill="#f4ead7"/>
+        <rect x="0" y="0" width="400" height="320" rx="16" fill="url(#g)"/>
+        <!-- house -->
+        <rect x="24" y="22" width="170" height="92" fill="#d6c7ab" stroke="#8a7350" stroke-width="2"/>
+        <text x="109" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#6b5a3e">House</text>
+        <!-- bed -->
+        <path d="M30 166 C 120 146, 240 158, 372 152 L 372 238 C 260 254, 140 230, 30 252 Z" fill="#9a6a3c" fill-opacity=".35" stroke="#78350f" stroke-width="2"/>
+        <!-- plants at mature spread -->
+        <circle cx="300" cy="72" r="54" fill="#16a34a" fill-opacity=".85" stroke="#14532d" stroke-width="2"/>
+        <circle cx="300" cy="72" r="3" fill="#14532d"/>
+        <circle cx="78" cy="204" r="30" fill="#14b8a6" fill-opacity=".85" stroke="#115e59" stroke-width="2"/>
+        <circle cx="146" cy="214" r="22" fill="#a855f7" fill-opacity=".8" stroke="#6b21a8" stroke-width="2"/>
+        <circle cx="196" cy="198" r="18" fill="#eab308" fill-opacity=".85" stroke="#854d0e" stroke-width="2"/>
+        <circle cx="240" cy="214" r="18" fill="#eab308" fill-opacity=".85" stroke="#854d0e" stroke-width="2"/>
+        <circle cx="300" cy="200" r="34" fill="#16a34a" fill-opacity=".75" stroke="#14532d" stroke-width="2"/>
+        <circle cx="354" cy="222" r="14" fill="#f97316" fill-opacity=".85" stroke="#9a3412" stroke-width="2"/>
+        <!-- scale bar -->
+        <g font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#6b5a3e">
+          <rect x="24" y="280" width="100" height="6" fill="#6b5a3e"/>
+          <rect x="74" y="280" width="50" height="6" fill="#f4ead7" stroke="#6b5a3e" stroke-width="1.5"/>
+          <text x="24" y="304">0</text><text x="124" y="304" text-anchor="middle">20 ft</text>
+        </g>
+        <g font-family="Inter, sans-serif" font-size="11.5" fill="#3f3424">
+          <text x="300" y="142" text-anchor="middle">Redbud, full-grown</text>
+        </g>
+      </svg>
+    </section>
+
+    <section class="points" aria-label="What FullGrown does">
+      <div class="point">
+        <h2><span class="dot" style="background:var(--leaf)"></span>Drawn to scale</h2>
+        <p>Sketch your yard, house and beds. Place plants at their mature spread, not the size of the pot.</p>
+      </div>
+      <div class="point">
+        <h2><span class="dot" style="background:var(--teal)"></span>Right for your ZIP</h2>
+        <p>Hardiness and frost dates where you live, whether a plant is native to your state, when it blooms there, and where it grows wild near you.</p>
+      </div>
+      <div class="point">
+        <h2><span class="dot" style="background:var(--bed)"></span>Every fact sourced</h2>
+        <p>Each value names its source: extension services, herbarium records, Kew's World Checklist, and the text of state and federal plant laws.</p>
+      </div>
+    </section>
+
+    <section class="partners">
+      <h2>If you heard from us about your data</h2>
+      <p>Thank you for reading. FullGrown shows every fact with the source it came from, by name. We follow each site's terms, and we ask first wherever they don't already allow our use.</p>
+      <p>Questions, or a correction: <a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a></p>
+    </section>
+  </main>
+
+  <footer>
+    <span>FullGrown Garden Planner · made in Caddo Valley, Arkansas</span>
+    <span><a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a></span>
+  </footer>
+</div>
+</body>
+</html>
