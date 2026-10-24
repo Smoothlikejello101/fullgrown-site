@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test FullGrown · Beta sign-up</title>
+<meta name="description" content="Sign up to test FullGrown, a garden planner built on sourced plant facts, on your own yard before it launches. Free during the beta.">
+<link rel="icon" href="../icon.png">
+<link rel="preload" href="../fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <header><a href="../"><img class="mark" src="../icon.png" alt="" width="34" height="34"><span class="word">FullGrown</span></a></header>
+
+  <main>
+    <h1>Test FullGrown before it launches</h1>
+    <p class="lede">FullGrown is a garden planner. Trace your yard from an aerial photo, place plants at their full-grown size, and see what won't work before you plant: too little sun, too crowded, not hardy where you live. Every plant fact says where it came from.</p>
+    <p>We're looking for a small group of gardeners to use it on a real yard and tell us what's confusing or missing.</p>
+    <ul>
+      <li><strong>Free during the beta,</strong> sync between your devices included. It runs in your phone's or computer's browser.</li>
+      <li><strong>A few weeks on your own yard,</strong> and a note now and then about what worked and what didn't.</li>
+      <li><strong>Best for gardens in the East and Midwest</strong> for now. The plant list is thinner elsewhere, and we'd still like to hear from you.</li>
+    </ul>
+    <p>Invitations go out in small waves, by email from hello@fullgrown.garden.</p>
+
+    <form id="signup" method="post" novalidate>
+      <label>First name
+        <input type="text" name="first_name" autocomplete="given-name" maxlength="60" required>
+      </label>
+      <label>Email
+        <input type="email" name="email" autocomplete="email" maxlength="254" required>
+      </label>
+      <div>
+        <label for="place">ZIP code or state</label>
+        <input type="text" id="place" name="place" autocomplete="postal-code" minlength="2" maxlength="40" required aria-describedby="place-hint">
+        <p class="hint" id="place-hint">Where the garden is, so we can invite a mix of regions.</p>
+      </div>
+      <fieldset>
+        <legend>Which phone would you use?</legend>
+        <div class="choices">
+          <label><input type="radio" name="phone" value="android"> Android</label>
+          <label><input type="radio" name="phone" value="iphone"> iPhone</label>
+          <label><input type="radio" name="phone" value="other"> Another phone</label>
+          <label><input type="radio" name="phone" value="none"> No smartphone</label>
+        </div>
+      </fieldset>
+      <label class="check"><input type="checkbox" name="computer"> I'd use a computer too</label>
+      <label>What are you planning? <span class="optional">(optional)</span>
+        <textarea name="planning" maxlength="1000" placeholder="A new bed by the patio, replacing some lawn, a whole yard…"></textarea>
+      </label>
+      <label>How did you hear about FullGrown? <span class="optional">(optional)</span>
+        <input type="text" name="heard" maxlength="200">
+      </label>
+      <div class="trap" aria-hidden="true"><label>Leave this empty <input type="text" name="fg_leave_empty" tabindex="-1" autocomplete="off"></label></div>
+      <p class="hint">We use your answers only to run the beta, and delete them when it ends. See the <a href="../privacy/">privacy policy</a>.</p>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+      <noscript><p class="message warn">This form needs JavaScript. You can also sign up by writing to <a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a>.</p></noscript>
+      <button type="submit" disabled>Sign me up</button>
+    </form>
+  </main>
+
+  <footer>
+    <span>FullGrown Garden Planner · made in Arkansas</span>
+    <nav><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a></nav>
+  </footer>
+</div>
+<script>
+// Sends the answers to FullGrown's database through one function that checks them (supabase/06-beta.sql
+// in the app's repository). The key is the public one the app uses: it can do nothing beyond that function.
+const SUPABASE = 'https://api.fullgrown.garden'; // (FullGrown's own address for its Supabase project)
+const KEY = 'sb_publishable_R6aLme10zqxx2yceOFQGEA__ayLzqPV';
+const form = document.getElementById('signup');
+const message = document.getElementById('message');
+const button = form.querySelector('button[type=submit]');
+const FIELDS = { 'email': 'your email address', 'first name': 'your first name', 'ZIP code or state': 'the ZIP code or state',
+  'phone': 'which phone you’d use', "what you're planning": 'what you’re planning (it’s a bit long)', 'how you heard': 'how you heard (it’s a bit long)' };
+
+// The message area is always there (empty until needed), so screen readers announce what appears in it.
+function say(text, warn, field) {
+  message.textContent = text;
+  message.className = 'message' + (warn ? ' warn' : '');
+  for (const f of form.querySelectorAll('[aria-invalid]')) f.removeAttribute('aria-invalid');
+  if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
+}
+function thanks(name) {
+  const done = document.createElement('div');
+  done.className = 'message done';
+  done.setAttribute('role', 'status');
+  done.tabIndex = -1; // focused, so it's read out and the keyboard has somewhere to be
+  done.textContent = `Thanks, ${name}! You’re on the list. Invitations go out in small waves, and yours will come from hello@fullgrown.garden.`;
+  form.replaceWith(done);
+  done.focus();
+}
+button.disabled = false; // the form works once this script has run
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const v = (n) => form.elements[n].value.trim();
+  // Only a bot fills the hidden field. (Should a browser's autofill ever do it, the person can still write to us.)
+  if (v('fg_leave_empty')) return say('That didn’t go through. Please write to hello@fullgrown.garden to sign up.', true);
+  const phone = form.querySelector('input[name=phone]:checked');
+  if (!v('first_name')) return say('Please give your first name.', true, form.elements.first_name);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'))) return say('Please check your email address.', true, form.elements.email);
+  if (v('place').length < 2) return say('Please give the garden’s ZIP code or state.', true, form.elements.place);
+  if (!phone) return say('Which phone would you use? Pick one, or "No smartphone".', true, form.querySelector('input[name=phone]'));
+  button.disabled = true;
+  say('Sending…', false);
+  try {
+    const r = await fetch(`${SUPABASE}/rest/v1/rpc/beta_signup`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        p_email: v('email'), p_first_name: v('first_name'), p_place: v('place'), p_phone: phone.value,
+        p_computer: form.elements.computer.checked, p_planning: v('planning'), p_heard: v('heard'),
+      }),
+    });
+    const answer = r.ok ? await r.json() : null;
+    if (answer === 'ok') return thanks(v('first_name'));
+    if (answer === 'busy') return say('A lot of people are signing up right now. Please try again in an hour.', true);
+    if (answer === 'too-many') return say('Too many sign-ups from this internet connection in the last hour. Please try again later.', true);
+    if (typeof answer === 'string' && answer.startsWith('invalid: ')) return say(`Please check ${FIELDS[answer.slice(9)] ?? 'your answers'}.`, true);
+    say('That didn’t go through. Please try again, or write to hello@fullgrown.garden.', true);
+  } catch {
+    say('Couldn’t reach the server. Check your connection and try again.', true);
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

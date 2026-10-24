@@ -6,9 +6,8 @@
 <title>FullGrown Garden Planner</title>
 <meta name="description" content="Plan a garden that actually works: every plant drawn at its full-grown size on your own yard, with facts you can check. Coming soon.">
 <link rel="icon" href="icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts.css">
 <style>
   :root {
     --paper: #ede0c8;
@@ -83,6 +82,8 @@
   .partners p { margin: 0 0 10px; color: var(--ink-soft); font-size: 16px; }
   .partners p:last-child { margin-bottom: 0; }
   a { color: var(--leaf-deep); font-weight: 600; text-underline-offset: 3px; }
+  .beta { margin: 18px 0 0; font-size: 17px; }
+  footer .links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
   footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 6px 18px; justify-content: space-between; }
   @media (max-width: 760px) {
     .wrap { padding: 20px 16px 36px; }
@@ -106,6 +107,7 @@
         <span class="tag">Coming soon</span>
         <h1>Plan a garden that actually works.</h1>
         <p class="lede">FullGrown draws every plant at its full-grown size, to scale, on your own yard, so you can see in March what your beds will look like in five years. Every fact behind it says where it came from.</p>
+        <p class="beta"><a href="beta/">Try it early: sign up for the beta</a></p>
       </div>
       <svg class="plan" viewBox="0 0 400 320" role="img" aria-label="A garden plan seen from above: a house, a curved bed, and plants drawn as circles at their mature spread, with a twenty-foot scale bar.">
         <defs>
@@ -162,8 +164,8 @@
   </main>
 
   <footer>
-    <span>FullGrown Garden Planner · made in Caddo Valley, Arkansas</span>
-    <span><a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a></span>
+    <span>FullGrown Garden Planner · made in Arkansas</span>
+    <span class="links"><a href="privacy/">Privacy</a><a href="terms/">Terms</a><a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a></span>
   </footer>
 </div>
 </body>
