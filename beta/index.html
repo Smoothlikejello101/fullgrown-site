@@ -6,9 +6,8 @@
 <title>Test FullGrown · Beta sign-up</title>
 <meta name="description" content="Sign up to test FullGrown, a garden planner built on sourced plant facts, on your own yard before it launches. Free during the beta.">
 <link rel="icon" href="../icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="../fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
@@ -26,17 +25,18 @@
     </ul>
     <p>Invitations go out in small waves, by email from hello@fullgrown.garden.</p>
 
-    <form id="signup" novalidate>
+    <form id="signup" method="post" novalidate>
       <label>First name
         <input type="text" name="first_name" autocomplete="given-name" maxlength="60" required>
       </label>
       <label>Email
         <input type="email" name="email" autocomplete="email" maxlength="254" required>
       </label>
-      <label>ZIP code or state
-        <input type="text" name="place" autocomplete="postal-code" minlength="2" maxlength="40" required>
-        <span class="hint">Where the garden is, so we can invite a mix of regions.</span>
-      </label>
+      <div>
+        <label for="place">ZIP code or state</label>
+        <input type="text" id="place" name="place" autocomplete="postal-code" minlength="2" maxlength="40" required aria-describedby="place-hint">
+        <p class="hint" id="place-hint">Where the garden is, so we can invite a mix of regions.</p>
+      </div>
       <fieldset>
         <legend>Which phone would you use?</legend>
         <div class="choices">
@@ -53,10 +53,11 @@
       <label>How did you hear about FullGrown? <span class="optional">(optional)</span>
         <input type="text" name="heard" maxlength="200">
       </label>
-      <label class="trap" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
-      <p class="hint">We use your answers only to run the beta, and delete them when it ends, unless you keep an account. See the <a href="../privacy/">privacy policy</a>.</p>
-      <div id="message" class="message" role="status" hidden></div>
-      <button type="submit">Sign me up</button>
+      <div class="trap" aria-hidden="true"><label>Leave this empty <input type="text" name="fg_leave_empty" tabindex="-1" autocomplete="off"></label></div>
+      <p class="hint">We use your answers only to run the beta, and delete them when it ends. See the <a href="../privacy/">privacy policy</a>.</p>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+      <noscript><p class="message warn">This form needs JavaScript. You can also sign up by writing to <a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a>.</p></noscript>
+      <button type="submit" disabled>Sign me up</button>
     </form>
   </main>
 
@@ -76,30 +77,36 @@ const button = form.querySelector('button[type=submit]');
 const FIELDS = { 'email': 'your email address', 'first name': 'your first name', 'ZIP code or state': 'the ZIP code or state',
   'phone': 'which phone you’d use', "what you're planning": 'what you’re planning (it’s a bit long)', 'how you heard': 'how you heard (it’s a bit long)' };
 
-function say(text, warn) {
+// The message area is always there (empty until needed), so screen readers announce what appears in it.
+function say(text, warn, field) {
   message.textContent = text;
   message.className = 'message' + (warn ? ' warn' : '');
-  message.hidden = false;
+  for (const f of form.querySelectorAll('[aria-invalid]')) f.removeAttribute('aria-invalid');
+  if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
 }
 function thanks(name) {
   const done = document.createElement('div');
   done.className = 'message done';
   done.setAttribute('role', 'status');
-  done.textContent = `Thanks${name ? ', ' + name : ''}! You’re on the list. Invitations go out in small waves, and yours will come from hello@fullgrown.garden.`;
+  done.tabIndex = -1; // focused, so it's read out and the keyboard has somewhere to be
+  done.textContent = `Thanks, ${name}! You’re on the list. Invitations go out in small waves, and yours will come from hello@fullgrown.garden.`;
   form.replaceWith(done);
+  done.focus();
 }
+button.disabled = false; // the form works once this script has run
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const v = (n) => form.elements[n].value.trim();
-  if (v('website')) { thanks(''); return; } // only a bot fills the hidden field
+  // Only a bot fills the hidden field. (Should a browser's autofill ever do it, the person can still write to us.)
+  if (v('fg_leave_empty')) return say('That didn’t go through. Please write to hello@fullgrown.garden to sign up.', true);
   const phone = form.querySelector('input[name=phone]:checked');
-  if (!v('first_name')) return say('Please give your first name.', true);
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'))) return say('Please check your email address.', true);
-  if (v('place').length < 2) return say('Please give the garden’s ZIP code or state.', true);
-  if (!phone) return say('Which phone would you use? Pick one, or "No smartphone".', true);
+  if (!v('first_name')) return say('Please give your first name.', true, form.elements.first_name);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'))) return say('Please check your email address.', true, form.elements.email);
+  if (v('place').length < 2) return say('Please give the garden’s ZIP code or state.', true, form.elements.place);
+  if (!phone) return say('Which phone would you use? Pick one, or "No smartphone".', true, form.querySelector('input[name=phone]'));
   button.disabled = true;
-  message.hidden = true;
+  say('Sending…', false);
   try {
     const r = await fetch(`${SUPABASE}/rest/v1/rpc/beta_signup`, {
       method: 'POST',
@@ -112,6 +119,7 @@ form.addEventListener('submit', async (e) => {
     const answer = r.ok ? await r.json() : null;
     if (answer === 'ok') return thanks(v('first_name'));
     if (answer === 'busy') return say('A lot of people are signing up right now. Please try again in an hour.', true);
+    if (answer === 'too-many') return say('Too many sign-ups from this internet connection in the last hour. Please try again later.', true);
     if (typeof answer === 'string' && answer.startsWith('invalid: ')) return say(`Please check ${FIELDS[answer.slice(9)] ?? 'your answers'}.`, true);
     say('That didn’t go through. Please try again, or write to hello@fullgrown.garden.', true);
   } catch {

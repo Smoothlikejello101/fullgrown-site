@@ -69,10 +69,13 @@ footer nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 form { display: grid; gap: 18px; margin-top: 20px; }
 label, legend { font-weight: 600; font-size: 15.5px; }
 .optional { font-weight: 400; color: var(--ink-soft); }
+/* 16px at least: smaller, and iPhones zoom in on the field. */
 input[type=text], input[type=email], textarea {
   display: block; width: 100%; margin-top: 6px; padding: 10px 12px; min-height: 46px;
-  font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 10px;
+  font: 400 16px/1.4 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 10px;
 }
+.message:empty { padding: 0; border: 0; }
 textarea { min-height: 96px; resize: vertical; }
 input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
 fieldset { border: 0; padding: 0; margin: 0; }
@@ -80,6 +83,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .choices label, .check { font-weight: 400; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
 .choices input, .check input { width: 20px; height: 20px; accent-color: var(--leaf-deep); }
 .hint { font-size: 14px; color: var(--ink-soft); font-weight: 400; margin: 4px 0 0; }
+label[for] { display: block; }
 button[type=submit] {
   justify-self: start; min-height: 48px; padding: 0 22px; border: 0; border-radius: 999px;
   font: 600 16px/1 Inter, sans-serif; color: #fff; background: #0f766e; cursor: pointer;

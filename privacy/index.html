@@ -6,9 +6,8 @@
 <title>Privacy policy · FullGrown</title>
 <meta name="description" content="What FullGrown collects, how it's used, who else handles it, how long it's kept, and your choices.">
 <link rel="icon" href="../icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="../fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
@@ -41,9 +40,9 @@
       <li>Your email address. If you sign in with Google, Google also gives us your name, a link to your profile picture and your Google account ID.</li>
       <li>Copies of your plans (ZIP code included), background photos and My plants, so they sync. Each plan notes the kind of device that last changed it, such as "Android phone", so your other devices can show it.</li>
       <li>Your plan: trial, beta or paid, and its dates.</li>
-      <li>When your free trial starts, a one-way fingerprint of your email address and of the installation's ID, so a trial can't be started twice. A fingerprint can't be turned back into the address, but it would match the address if someone already had it.</li>
+      <li>When your free trial starts, the installation's random ID and a one-way fingerprint of your email address, so a trial can't be started twice. The fingerprint is also kept when an account is deleted. It can't be turned back into the address, but it would match the address if someone already had it.</li>
     </ul>
-    <p><strong>If you sign up for the beta,</strong> we keep what the sign-up form asks: your first name, email address, ZIP code or state, the devices you'd use, what you're planning and how you heard about FullGrown. We use it only to run the beta, and delete it when the beta ends, unless you keep an account.</p>
+    <p><strong>If you sign up for the beta,</strong> we keep what the sign-up form asks: your first name, email address, ZIP code or state, the devices you'd use, what you're planning and how you heard about FullGrown. We use it only to run the beta, and delete it when the beta ends. To stop floods of fake sign-ups, the form also keeps a scrambled copy of the internet address each sign-up came from, for an hour.</p>
     <p><strong>When you use the app or the website,</strong> the services that host them keep technical logs, such as your IP address, browser type and the time of each request. They keep them for security and to run the service; we don't use them to track you.</p>
     <p><strong>Feedback.</strong> Send feedback in the app opens an email to us with the app's version and your kind of device (such as "Android phone") already filled in. You see it, and can change it, before you send.</p>
     <p><strong>Cookies.</strong> We don't use cookies for tracking. The app keeps your sign-in in your browser's storage.</p>
@@ -67,11 +66,11 @@
       <table>
         <thead><tr><th>Service</th><th>What it does for FullGrown</th><th>What it receives</th></tr></thead>
         <tbody>
-          <tr><td><a href="https://supabase.com/privacy">Supabase</a></td><td>Accounts, sync and photo storage</td><td>Your account details, synced plans, photos and My plants, and request logs</td></tr>
+          <tr><td><a href="https://supabase.com/privacy">Supabase</a></td><td>Accounts, sync, photo storage and the beta sign-up list</td><td>Your account details, synced plans, photos and My plants, beta sign-up answers, and request logs</td></tr>
           <tr><td><a href="https://policies.google.com/privacy">Google</a></td><td>Sign-in, only if you choose "Sign in with Google"</td><td>That you're signing in to FullGrown</td></tr>
           <tr><td><a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a></td><td>Hosts the app's and the website's files</td><td>Request logs, including IP addresses</td></tr>
-          <tr><td><a href="https://resend.com/legal/privacy-policy">Resend</a></td><td>Sends sign-in emails</td><td>Your email address and the email</td></tr>
-          <tr><td><a href="https://proton.me/legal/privacy">Proton</a></td><td>Receives email sent to hello@fullgrown.garden</td><td>Your message and address</td></tr>
+          <tr><td><a href="https://resend.com/legal/privacy-policy">Resend</a></td><td>Sends sign-in codes, when you sign in by email</td><td>Your email address and the email</td></tr>
+          <tr><td><a href="https://proton.me/legal/privacy">Proton</a></td><td>Our email: receives what you send to hello@fullgrown.garden, and sends our replies and beta invitations</td><td>Your messages and address; for a beta invitation, your first name</td></tr>
         </tbody>
       </table>
     </div>
@@ -86,11 +85,12 @@
           <tr><td>Plans, photos and plants on your device</td><td>Until you delete them, or clear your browser's storage for FullGrown</td></tr>
           <tr><td>A synced plan you delete</td><td>30 days in Recently deleted, where you can restore it; then removed for good</td></tr>
           <tr><td>Your account and everything synced with it</td><td>Until you delete your account. Deleting it removes your account, synced plans, photos and My plants from our server at once. Plans on your device stay.</td></tr>
-          <tr><td>Trial fingerprints</td><td>Kept after an account is deleted, so a trial can't be started twice</td></tr>
+          <tr><td>Synced copies, after a trial or plan ends</td><td>14 months, then deleted, after we've emailed you</td></tr>
+          <tr><td>The installation ID and email fingerprint from a trial</td><td>Kept, after an account is deleted too, so a trial can't be started twice</td></tr>
           <tr><td>Our database provider's backups</td><td>Deleted data drops out as backups expire, within 7 days</td></tr>
           <tr><td>Hosting logs</td><td>A few days, as each provider sets</td></tr>
           <tr><td>Email you send us</td><td>Kept in our mailbox. Ask, and we'll delete your messages.</td></tr>
-          <tr><td>Beta sign-ups</td><td>Until the beta ends, then deleted</td></tr>
+          <tr><td>Beta sign-ups</td><td>Until the beta ends, then deleted. The scrambled internet addresses: an hour.</td></tr>
         </tbody>
       </table>
     </div>
@@ -100,7 +100,7 @@
       <li><strong>Use it without an account.</strong> Nothing you make leaves your device.</li>
       <li><strong>Take a copy.</strong> Projects → Backup → Back up all projects saves every plan and your own plants to one file you keep.</li>
       <li><strong>Delete.</strong> Delete any plan in the app. To delete your account and everything synced with it, use Projects → Account → Delete my account.</li>
-      <li><strong>Sign out</strong> of one device with Projects → Account → Sign out on this device. Its plans stay on it.</li>
+      <li><strong>Sign out</strong> of one device with Projects → Account → Sign out. Its plans stay on it.</li>
       <li><strong>Ask us.</strong> Write to <a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a> to find out what we hold about you, get a copy, correct it or delete it. We'll answer within 30 days, wherever you live, whether or not your state's or country's law requires it.</li>
     </ul>
 
