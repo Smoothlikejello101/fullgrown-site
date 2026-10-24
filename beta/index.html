@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test FullGrown · Beta sign-up</title>
+<meta name="description" content="Sign up to test FullGrown, a garden planner built on sourced plant facts, on your own yard before it launches. Free during the beta.">
+<link rel="icon" href="../icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <header><a href="../"><img class="mark" src="../icon.png" alt="" width="34" height="34"><span class="word">FullGrown</span></a></header>
+
+  <main>
+    <h1>Test FullGrown before it launches</h1>
+    <p class="lede">FullGrown is a garden planner. Trace your yard from an aerial photo, place plants at their full-grown size, and see what won't work before you plant: too little sun, too crowded, not hardy where you live. Every plant fact says where it came from.</p>
+    <p>We're looking for a small group of gardeners to use it on a real yard and tell us what's confusing or missing.</p>
+    <ul>
+      <li><strong>Free during the beta,</strong> sync between your devices included. It runs in your phone's or computer's browser.</li>
+      <li><strong>A few weeks on your own yard,</strong> and a note now and then about what worked and what didn't.</li>
+      <li><strong>Best for gardens in the East and Midwest</strong> for now. The plant list is thinner elsewhere, and we'd still like to hear from you.</li>
+    </ul>
+    <p>Invitations go out in small waves, by email from hello@fullgrown.garden.</p>
+
+    <form id="signup" novalidate>
+      <label>First name
+        <input type="text" name="first_name" autocomplete="given-name" maxlength="60" required>
+      </label>
+      <label>Email
+        <input type="email" name="email" autocomplete="email" maxlength="254" required>
+      </label>
+      <label>ZIP code or state
+        <input type="text" name="place" autocomplete="postal-code" minlength="2" maxlength="40" required>
+        <span class="hint">Where the garden is, so we can invite a mix of regions.</span>
+      </label>
+      <fieldset>
+        <legend>Which phone would you use?</legend>
+        <div class="choices">
+          <label><input type="radio" name="phone" value="android"> Android</label>
+          <label><input type="radio" name="phone" value="iphone"> iPhone</label>
+          <label><input type="radio" name="phone" value="other"> Another phone</label>
+          <label><input type="radio" name="phone" value="none"> No smartphone</label>
+        </div>
+      </fieldset>
+      <label class="check"><input type="checkbox" name="computer"> I'd use a computer too</label>
+      <label>What are you planning? <span class="optional">(optional)</span>
+        <textarea name="planning" maxlength="1000" placeholder="A new bed by the patio, replacing some lawn, a whole yard…"></textarea>
+      </label>
+      <label>How did you hear about FullGrown? <span class="optional">(optional)</span>
+        <input type="text" name="heard" maxlength="200">
+      </label>
+      <label class="trap" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      <p class="hint">We use your answers only to run the beta, and delete them when it ends, unless you keep an account. See the <a href="../privacy/">privacy policy</a>.</p>
+      <div id="message" class="message" role="status" hidden></div>
+      <button type="submit">Sign me up</button>
+    </form>
+  </main>
+
+  <footer>
+    <span>FullGrown Garden Planner · made in Arkansas</span>
+    <nav><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a></nav>
+  </footer>
+</div>
+<script>
+// Sends the answers to FullGrown's database through one function that checks them (supabase/06-beta.sql
+// in the app's repository). The key is the public one the app uses: it can do nothing beyond that function.
+const SUPABASE = 'https://erepgvypesysctxezwkm.supabase.co';
+const KEY = 'sb_publishable_R6aLme10zqxx2yceOFQGEA__ayLzqPV';
+const form = document.getElementById('signup');
+const message = document.getElementById('message');
+const button = form.querySelector('button[type=submit]');
+const FIELDS = { 'email': 'your email address', 'first name': 'your first name', 'ZIP code or state': 'the ZIP code or state',
+  'phone': 'which phone you’d use', "what you're planning": 'what you’re planning (it’s a bit long)', 'how you heard': 'how you heard (it’s a bit long)' };
+
+function say(text, warn) {
+  message.textContent = text;
+  message.className = 'message' + (warn ? ' warn' : '');
+  message.hidden = false;
+}
+function thanks(name) {
+  const done = document.createElement('div');
+  done.className = 'message done';
+  done.setAttribute('role', 'status');
+  done.textContent = `Thanks${name ? ', ' + name : ''}! You’re on the list. Invitations go out in small waves, and yours will come from hello@fullgrown.garden.`;
+  form.replaceWith(done);
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const v = (n) => form.elements[n].value.trim();
+  if (v('website')) { thanks(''); return; } // only a bot fills the hidden field
+  const phone = form.querySelector('input[name=phone]:checked');
+  if (!v('first_name')) return say('Please give your first name.', true);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'))) return say('Please check your email address.', true);
+  if (v('place').length < 2) return say('Please give the garden’s ZIP code or state.', true);
+  if (!phone) return say('Which phone would you use? Pick one, or "No smartphone".', true);
+  button.disabled = true;
+  message.hidden = true;
+  try {
+    const r = await fetch(`${SUPABASE}/rest/v1/rpc/beta_signup`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        p_email: v('email'), p_first_name: v('first_name'), p_place: v('place'), p_phone: phone.value,
+        p_computer: form.elements.computer.checked, p_planning: v('planning'), p_heard: v('heard'),
+      }),
+    });
+    const answer = r.ok ? await r.json() : null;
+    if (answer === 'ok') return thanks(v('first_name'));
+    if (answer === 'busy') return say('A lot of people are signing up right now. Please try again in an hour.', true);
+    if (typeof answer === 'string' && answer.startsWith('invalid: ')) return say(`Please check ${FIELDS[answer.slice(9)] ?? 'your answers'}.`, true);
+    say('That didn’t go through. Please try again, or write to hello@fullgrown.garden.', true);
+  } catch {
+    say('Couldn’t reach the server. Check your connection and try again.', true);
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
