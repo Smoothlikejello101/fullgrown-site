@@ -92,5 +92,7 @@ button[type=submit][disabled] { opacity: 0.6; cursor: default; }
 .message { border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); }
 .message.warn { color: var(--warn); }
 .message.done { border-left: 4px solid var(--leaf); }
+/* Cloudflare Turnstile's check: its room kept while it loads, so the button doesn't move. */
+.human-check { min-height: 65px; }
 /* Left empty by people; filled only by bots that fill every field. */
 .trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
