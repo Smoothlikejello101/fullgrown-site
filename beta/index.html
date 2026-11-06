@@ -11,6 +11,8 @@
 <link rel="preload" href="../fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../site.css">
+<!-- Cloudflare Turnstile: the check that a person is filling in the form (the privacy policy lists it). -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -57,6 +59,7 @@
         <input type="text" name="heard" maxlength="200">
       </label>
       <div class="trap" aria-hidden="true"><label>Leave this empty <input type="text" name="fg_leave_empty" tabindex="-1" autocomplete="off"></label></div>
+      <div class="cf-turnstile human-check" data-sitekey="0x4AAAAAAF1xSAe3qMFDUieQ" data-action="beta-signup" data-theme="auto" data-size="flexible" data-error-callback="checkTrouble"></div>
       <p class="hint">We use your answers only to run the beta, and delete them when it ends. See the <a href="../privacy/">privacy policy</a>.</p>
       <div id="message" class="message" role="status" aria-live="polite"></div>
       <noscript><p class="message warn">This form needs JavaScript. You can also sign up by writing to <a href="mailto:hello@fullgrown.garden">hello@fullgrown.garden</a>.</p></noscript>
@@ -70,8 +73,9 @@
   </footer>
 </div>
 <script>
-// Sends the answers to FullGrown's database through one function that checks them (supabase/06-beta.sql
-// in the app's repository). The key is the public one the app uses: it can do nothing beyond that function.
+// Sends the answers, with Cloudflare Turnstile's token, to FullGrown's server function (supabase/functions/beta-signup
+// in the app's repository). It asks Cloudflare whether a person filled in the form, then records the answers through
+// a database function that checks each one. The key is the public one the app uses: it can do nothing beyond that.
 const SUPABASE = 'https://api.fullgrown.garden'; // (FullGrown's own address for its Supabase project)
 const KEY = 'sb_publishable_R6aLme10zqxx2yceOFQGEA__ayLzqPV';
 const form = document.getElementById('signup');
@@ -87,6 +91,11 @@ function say(text, warn, field) {
   for (const f of form.querySelectorAll('[aria-invalid]')) f.removeAttribute('aria-invalid');
   if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
 }
+// Turnstile couldn't load or run (blocked, or offline): say so, with another way to sign up.
+window.checkTrouble = () => {
+  say('The check that you’re a person couldn’t load. Try reloading the page, or write to hello@fullgrown.garden to sign up.', true);
+  return true; // (handled here: Turnstile then doesn't show its own error too)
+};
 function thanks(name) {
   const done = document.createElement('div');
   done.className = 'message done';
@@ -108,19 +117,24 @@ form.addEventListener('submit', async (e) => {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'))) return say('Please check your email address.', true, form.elements.email);
   if (v('place').length < 2) return say('Please give the garden’s ZIP code or state.', true, form.elements.place);
   if (!phone) return say('Which phone would you use? Pick one, or "No smartphone".', true, form.querySelector('input[name=phone]'));
+  // (Turnstile puts its token in the form when its check is done: usually by itself, sometimes after a tap on it.)
+  const token = form.querySelector('[name="cf-turnstile-response"]')?.value ?? '';
+  if (!token) return say('One moment: the check that you’re a person, just above the button, hasn’t finished. If it shows a box, tap it, then try again.', true);
   button.disabled = true;
   say('Sending…', false);
+  let answer = null;
   try {
-    const r = await fetch(`${SUPABASE}/rest/v1/rpc/beta_signup`, {
+    const r = await fetch(`${SUPABASE}/functions/v1/beta-signup`, {
       method: 'POST',
       headers: { apikey: KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        p_email: v('email'), p_first_name: v('first_name'), p_place: v('place'), p_phone: phone.value,
-        p_computer: form.elements.computer.checked, p_planning: v('planning'), p_heard: v('heard'),
+        email: v('email'), first_name: v('first_name'), place: v('place'), phone: phone.value,
+        computer: form.elements.computer.checked, planning: v('planning'), heard: v('heard'), token,
       }),
     });
-    const answer = r.ok ? await r.json() : null;
+    answer = await r.json().catch(() => null);
     if (answer === 'ok') return thanks(v('first_name'));
+    if (answer === 'check-failed') return say('The check that you’re a person didn’t go through. Please do it again, just above the button, and resend.', true);
     if (answer === 'busy') return say('A lot of people are signing up right now. Please try again in an hour.', true);
     if (answer === 'too-many') return say('Too many sign-ups from this internet connection in the last hour. Please try again later.', true);
     if (typeof answer === 'string' && answer.startsWith('invalid: ')) return say(`Please check ${FIELDS[answer.slice(9)] ?? 'your answers'}.`, true);
@@ -129,6 +143,8 @@ form.addEventListener('submit', async (e) => {
     say('Couldn’t reach the server. Check your connection and try again.', true);
   } finally {
     button.disabled = false;
+    // (A token works once: a fresh check for the next try.)
+    if (answer !== 'ok') window.turnstile?.reset();
   }
 });
 </script>
