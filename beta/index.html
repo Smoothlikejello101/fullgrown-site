@@ -107,6 +107,19 @@ function thanks(name) {
 }
 button.disabled = false; // the form works once this script has run
 
+// A society's own short link (fullgrown.garden/beta/tn, a page that brings people here as ?from=tn) fills in how they
+// heard, so Jason can tell which society each sign-up came from (Jason, Nov 7). It's the same answer the form always
+// asked for, shown in its box, and the person can change it. Only these codes; anything else is left alone.
+const FROM = new Map([
+  ['tn', 'Tennessee Native Plant Society'], ['il', 'Illinois Native Plant Society'],
+  ['nc', 'North Carolina Native Plant Society'], ['ky', 'Kentucky Native Plant Society'],
+  ['mo', 'Missouri Native Plant Society'], ['va', 'Virginia Native Plant Society'],
+  ['ga', 'Georgia Native Plant Society'], ['in', 'Indiana Native Plant Society'],
+  ['md', 'Maryland Native Plant Society'], ['pa', 'Pennsylvania Native Plant Society'],
+]);
+const from = FROM.get(new URLSearchParams(location.search).get('from') ?? '');
+if (from && !form.elements.heard.value) form.elements.heard.value = from;
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const v = (n) => form.elements[n].value.trim();
