@@ -137,6 +137,7 @@ const FROM = new Map([
   ['mo', 'Missouri Native Plant Society'], ['va', 'Virginia Native Plant Society'],
   ['ga', 'Georgia Native Plant Society'], ['in', 'Indiana Native Plant Society'],
   ['md', 'Maryland Native Plant Society'], ['pa', 'Pennsylvania Native Plant Society'],
+  ['sc', 'South Carolina Native Plant Society'],
 ]);
 const from = FROM.get(new URLSearchParams(location.search).get('from') ?? '');
 if (from && !form.elements.heard.value) form.elements.heard.value = from;
