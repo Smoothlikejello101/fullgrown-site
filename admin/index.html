@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Beta sign-ups · FullGrown</title>
+<meta name="theme-color" content="#ede0c8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../fonts.css">
+<style>
+  /* The admin's page for the beta (Jason, Nov 7): who's in, who's waiting, and one button to approve or decline.
+     Made for a phone: one column, big buttons. Everything on it comes from Supabase, for the admin's account only
+     (supabase/10-beta-approve.sql in the app's repo); nothing on the page is secret. */
+  :root {
+    --paper: #ede0c8; --card: #fffcf4; --ink: #2b2118; --ink-soft: #5e4f3f; --line: rgba(80, 60, 30, 0.18);
+    --field: #fffdf7; --leaf: #166534; --leaf-bg: #dcfce7; --warn: #9a3412; --warn-bg: #ffedd5; --bar: #b7a37c;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1d1913; --card: #2b251d; --ink: #f1e8d6; --ink-soft: #c2b49c; --line: rgba(237, 224, 200, 0.14);
+      --field: #2a241c; --leaf: #86efac; --leaf-bg: #14321f; --warn: #fdba74; --warn-bg: #3b2414; --bar: #7a6a4f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1d1913; --card: #2b251d; --ink: #f1e8d6; --ink-soft: #c2b49c; --line: rgba(237, 224, 200, 0.14);
+    --field: #2a241c; --leaf: #86efac; --leaf-bg: #14321f; --warn: #fdba74; --warn-bg: #3b2414; --bar: #7a6a4f;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.5 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px 48px; }
+  header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  header img { width: 32px; height: 32px; border-radius: 8px; }
+  header h1 { font: 600 22px/1.2 Fraunces, Georgia, serif; margin: 0; flex: 1; }
+  .updated { font-size: 13px; color: var(--ink-soft); margin: -8px 0 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 0 0 12px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 22px 0 8px; letter-spacing: 0.01em; }
+  h2 .n { color: var(--ink-soft); font-weight: 500; }
+  button { font: inherit; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--field); color: var(--ink); cursor: pointer; }
+  button.primary { background: #166534; border-color: #166534; color: #fff; }
+  button.icon { min-width: 44px; padding: 0 10px; }
+  button:disabled { opacity: 0.55; cursor: default; }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+  input, select { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; min-height: 44px; width: 100%; }
+  label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+  .check { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .check input { width: 22px; height: 22px; min-height: 0; }
+  form { display: grid; gap: 12px; }
+  .hint { font-size: 14px; color: var(--ink-soft); margin: 0; }
+  .note { font-size: 14px; border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; background: var(--warn-bg); color: var(--warn); }
+  .note.ok { background: var(--leaf-bg); color: var(--leaf); }
+  /* Totals */
+  .big { font: 600 34px/1.1 Fraunces, Georgia, serif; }
+  .big small { font: 500 16px/1.4 Inter, sans-serif; color: var(--ink-soft); }
+  .sub { color: var(--ink-soft); font-size: 14px; margin-top: 4px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 4px 0; }
+  details.fold { margin-top: 14px; border-top: 1px solid var(--line); }
+  details.fold > summary { list-style: none; cursor: pointer; font-weight: 600; padding: 12px 0 2px; min-height: 44px;
+    display: flex; justify-content: space-between; align-items: center; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary::after { content: "▾"; color: var(--ink-soft); }
+  details.fold[open] > summary::after { content: "▴"; }
+  .so-far { color: var(--ink-soft); font-size: 13px; white-space: nowrap; }
+  .seg button { border: 0; border-radius: 0; min-height: 36px; font-size: 14px; background: transparent; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .break h3 { font-size: 13px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 6px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; font-size: 14px; margin: 4px 0; }
+  .row .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .row .bar i { display: block; height: 100%; background: var(--bar); border-radius: 3px; }
+  .row b { font-variant-numeric: tabular-nums; }
+  /* A sign-up */
+  .who { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .who strong { font-size: 18px; }
+  .when { font-size: 13px; color: var(--ink-soft); }
+  dl { margin: 8px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; font-size: 15px; }
+  dt { color: var(--ink-soft); }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  dd a { color: var(--leaf); }
+  .actions { display: flex; gap: 10px; margin-top: 14px; }
+  .actions button { flex: 1; }
+  .pending { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 15px; }
+  .pending span { flex: 1; }
+  .pending button { flex: 0 0 auto; min-width: 96px; }
+  .status { margin-top: 12px; font-size: 14px; font-weight: 600; }
+  .status.good { color: var(--leaf); }
+  .status.bad { color: var(--warn); }
+  details.card { padding: 0; }
+  details.card > summary { list-style: none; padding: 14px 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::after { content: "▾"; color: var(--ink-soft); }
+  details.card[open] > summary::after { content: "▴"; }
+  details.card > .inner { padding: 0 16px 16px; }
+  .line { border-top: 1px solid var(--line); padding: 12px 0; }
+  .line:first-child { border-top: 0; padding-top: 0; }
+  .line .who strong { font-size: 16px; }
+  .line .meta { font-size: 14px; color: var(--ink-soft); }
+  .line .actions { margin-top: 8px; }
+  .code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; letter-spacing: 1px; }
+  .empty { color: var(--ink-soft); font-size: 15px; margin: 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="../icon.png" alt="">
+    <h1>Beta sign-ups</h1>
+    <button class="icon" id="refresh" type="button" aria-label="Refresh" title="Refresh" hidden>↻</button>
+    <button id="sign-out" type="button" hidden>Sign out</button>
+  </header>
+  <p class="updated" id="updated" hidden></p>
+  <p class="note" id="note" role="status" hidden></p>
+
+  <section id="sign-in" class="card" hidden>
+    <form id="email-form" novalidate>
+      <p class="hint">Sign in with FullGrown's admin account: a code comes by email.</p>
+      <label>Email <input type="email" name="email" autocomplete="email" required></label>
+      <button class="primary" type="submit">Email me a code</button>
+    </form>
+    <form id="code-form" novalidate hidden>
+      <p class="hint" id="code-sent"></p>
+      <label>The code from the email <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required></label>
+      <button class="primary" type="submit">Sign in</button>
+      <button type="button" id="other-email">Use another email</button>
+    </form>
+  </section>
+
+  <main id="main" hidden>
+    <section class="card">
+      <div id="totals"></div>
+      <details class="fold" id="who-part">
+        <summary>Who they are</summary>
+        <div id="who"></div>
+      </details>
+    </section>
+    <h2>Waiting <span class="n" id="waiting-n"></span></h2>
+    <div id="waiting"></div>
+    <div id="earlier-part" hidden>
+      <h2>Signed up before this page <span class="n" id="earlier-n"></span></h2>
+      <p class="hint" style="margin:0 0 10px">Already in: you let them in by hand, so no email goes. Not yet: they join Waiting.</p>
+      <div id="earlier"></div>
+    </div>
+    <details class="card" id="waitlist-part"><summary><span>On the waitlist <span class="n" id="waitlist-n"></span></span></summary><div class="inner" id="waitlist"></div></details>
+    <details class="card" id="testers-part"><summary><span>Testers <span class="n" id="testers-n"></span></span></summary><div class="inner" id="testers"></div></details>
+    <details class="card" id="add-part">
+      <summary>Add a tester</summary>
+      <div class="inner">
+        <form id="add-form" novalidate>
+          <p class="hint">Someone you let in by hand, so the totals count them. No email goes: they have theirs.</p>
+          <label>First name <input name="first_name" maxlength="60" autocomplete="off" required></label>
+          <label>Email <input type="email" name="email" maxlength="254" autocomplete="off" required></label>
+          <label>ZIP code or state <input name="place" maxlength="40" autocomplete="off" required></label>
+          <label>Phone
+            <select name="phone">
+              <option value="android">Android</option>
+              <option value="iphone">iPhone</option>
+              <option value="other">Another phone</option>
+              <option value="none">No smartphone</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" name="computer"> Uses a computer too</label>
+          <label>How they heard <input name="heard" maxlength="200" value="Wave 1 (invited)" autocomplete="off"></label>
+          <button class="primary" type="submit">Add</button>
+        </form>
+      </div>
+    </details>
+  </main>
+</div>
+<script type="module">
+import { STATE_NAMES, ZIP3 } from './zip-states.js';
+
+const SUPABASE = 'https://api.fullgrown.garden'; // (FullGrown's own address for its Supabase project: public)
+const KEY = 'sb_publishable_R6aLme10zqxx2yceOFQGEA__ayLzqPV'; // (the publishable key: public by design)
+const UNDO_SECONDS = 5; // (an email can't be taken back: a moment to undo a tap first)
+const $ = (id) => document.getElementById(id);
+
+// ---------- Signing in (Supabase's email code, for an account that already exists) ----------
+const SESSION = 'fg-admin-session';
+let session = null;
+try { session = JSON.parse(localStorage.getItem(SESSION) || 'null'); } catch { session = null; }
+function keep(s) {
+  session = s;
+  try { if (s) localStorage.setItem(SESSION, JSON.stringify(s)); else localStorage.removeItem(SESSION); } catch { /* kept for this visit only */ }
+}
+async function auth(path, body) {
+  const r = await fetch(`${SUPABASE}/auth/v1/${path}`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data.msg || data.error_description || data.message || `HTTP ${r.status}`), { status: r.status });
+  return data;
+}
+const asSession = (d) => ({ access: d.access_token, refresh: d.refresh_token, until: Date.now() + (d.expires_in ?? 3600) * 1000, email: d.user?.email ?? session?.email });
+async function fresh() {
+  if (!session) return null;
+  if (Date.now() < session.until - 60000) return session.access;
+  try { keep(asSession(await auth('token?grant_type=refresh_token', { refresh_token: session.refresh }))); return session.access; }
+  catch (e) { if (e.status === 400 || e.status === 401) keep(null); throw e; }
+}
+/** A call to one of the page's functions (10-beta-approve.sql), as the signed-in account. */
+async function call(fn, args = {}) {
+  const token = await fresh();
+  if (!token) { show(); throw new Error('signed out'); }
+  const r = await fetch(`${SUPABASE}/rest/v1/rpc/${fn}`, {
+    method: 'POST', headers: { apikey: KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+  const data = await r.json().catch(() => null);
+  if (!r.ok) throw Object.assign(new Error(data?.message || `HTTP ${r.status}`), { status: r.status, code: data?.code });
+  return data;
+}
+
+function say(text, ok = false) {
+  const n = $('note');
+  n.textContent = text; n.hidden = !text; n.classList.toggle('ok', ok);
+}
+function trouble(e) {
+  if (e.code === '42501') say('This account isn\'t the admin. In Supabase, run the line at the top of 10-beta-approve.sql with your account\'s email.');
+  else if (e.code === 'PGRST202') say('The page\'s functions aren\'t in Supabase yet: paste 10-beta-approve.sql in the SQL Editor.');
+  else if (e.message !== 'signed out') say(`That didn't work (${e.message}). Check the connection and try again.`);
+}
+
+let pendingEmail = '';
+$('email-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const email = ev.target.email.value.trim();
+  if (!email) return;
+  const b = ev.target.querySelector('button'); b.disabled = true;
+  try {
+    await auth('otp', { email, create_user: false });
+    pendingEmail = email;
+    $('code-sent').textContent = `A code went to ${email}.`;
+    $('email-form').hidden = true; $('code-form').hidden = false; say('');
+    $('code-form').code.focus();
+  } catch (e) {
+    say(e.status === 429 ? 'Too many codes asked for just now: wait a minute, then try again.' : `No code went (${e.message}). Is it the admin account's email?`);
+  } finally { b.disabled = false; }
+});
+$('code-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const token = ev.target.code.value.replace(/\D/g, '');
+  const b = ev.target.querySelector('button.primary'); b.disabled = true;
+  try {
+    keep(asSession(await auth('verify', { type: 'email', email: pendingEmail, token })));
+    ev.target.reset(); say(''); show(); load();
+  } catch (e) { say(`That code didn't work (${e.message}). Check it, or ask for a new one.`); }
+  finally { b.disabled = false; }
+});
+$('other-email').addEventListener('click', () => { $('code-form').hidden = true; $('email-form').hidden = false; });
+$('sign-out').addEventListener('click', () => {
+  const token = session?.access;
+  if (token) fetch(`${SUPABASE}/auth/v1/logout`, { method: 'POST', headers: { apikey: KEY, Authorization: `Bearer ${token}` } }).catch(() => {});
+  keep(null); list = null; show(); say('');
+});
+const counting = () => Object.keys(waits).length > 0;
+$('refresh').addEventListener('click', () => { if (!counting()) load(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && session && !counting()) load(); });
+
+function show() {
+  const inn = !!session;
+  $('sign-in').hidden = inn; $('main').hidden = !inn || !list;
+  $('refresh').hidden = !inn; $('sign-out').hidden = !inn; $('updated').hidden = !inn || !list;
+}
+
+// ---------- The list ----------
+let list = null; // (admin_beta_list's answer)
+let group = 'approved'; // the breakdowns' group: 'approved' (testers) or 'all'
+const waits = {}; // sign-up id → its undo timer, while a decision waits out its seconds
+
+async function load() {
+  try {
+    list = await call('admin_beta_list');
+    say(''); show(); draw();
+    $('updated').textContent = `Updated ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  } catch (e) { trouble(e); }
+}
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) n.append(k);
+  return n;
+}
+const PHONES = { android: 'Android', iphone: 'iPhone', other: 'Another phone', none: 'No smartphone' };
+const phoneSaid = (s) => PHONES[s.phone] + (s.computer ? ', and a computer' : '');
+const when = (t) => new Date(t).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+
+/** A sign-up's state, from its ZIP code or what it says: "TN", "Ohio", "Austin, TX"; null if it can't tell. */
+const NAMES = Object.entries(STATE_NAMES).sort((a, b) => b[1].length - a[1].length);
+function stateOf(place) {
+  const p = (place || '').trim();
+  const zip = p.match(/\b(\d{5})(?:-\d{4})?\b/);
+  if (zip) return ZIP3[zip[1].slice(0, 3)] ?? null;
+  if (/^[A-Za-z]{2}$/.test(p) && STATE_NAMES[p.toUpperCase()]) return p.toUpperCase();
+  for (const [code, name] of NAMES) if (new RegExp(`\\b${name}\\b`, 'i').test(p)) return code;
+  const caps = p.match(/\b([A-Z]{2})\b/g) ?? [];
+  return caps.find((c) => STATE_NAMES[c]) ?? null;
+}
+
+function draw() {
+  const all = list.signups;
+  const by = (st) => all.filter((s) => s.status === st);
+  const testers = by('approved'), waiting = by('waiting').reverse(), earlier = by('earlier').reverse(), waitlisted = by('waitlisted');
+  // Totals
+  const used = testers.filter((s) => s.used).length;
+  sofar = { heard: count(testers, heardKey), phone: count(testers, (s) => s.phone), state: count(testers, (s) => stateOf(s.place) ?? '?') };
+  $('totals').replaceChildren(
+    el('div', { class: 'big' }, String(testers.length), ' ', el('small', {}, testers.length === 1 ? 'tester' : 'testers')),
+    el('div', { class: 'sub' }, [plural(waiting.length, 'waiting', 'waiting'), plural(waitlisted.length, 'on the waitlist', 'on the waitlist'),
+      `${all.length} signed up in all`, `${list.accounts} signed in with a code`].join(' · ')),
+    el('div', { class: 'sub' }, used || testers.some((s) => s.code) ? `${used} of those approved here have used their code.` : ''));
+  // Waiting, and those from before the page
+  $('waiting-n').textContent = `(${waiting.length})`;
+  $('waiting').replaceChildren(...(waiting.length ? waiting.map((s) => card(s, [
+    ['Approve', 'approve', 'primary', `Approving ${s.name}: the welcome email goes in`],
+    ['Decline', 'waitlist', '', `Declining ${s.name}: the waitlist email goes in`]])) : [el('p', { class: 'empty' }, 'Nobody waiting.')]));
+  $('earlier-part').hidden = !earlier.length;
+  $('earlier-n').textContent = `(${earlier.length})`;
+  $('earlier').replaceChildren(...earlier.map((s) => card(s, [['Already in', 'in', 'primary', null], ['Not yet', 'not-yet', '', null]])));
+  drawWho();
+  // The waitlist, and the testers
+  $('waitlist-n').textContent = `(${waitlisted.length})`;
+  $('waitlist').replaceChildren(...(waitlisted.length ? waitlisted.map((s) => line(s, [['Approve', 'approve', 'primary', `Approving ${s.name}: the welcome email goes in`]]))
+    : [el('p', { class: 'empty' }, 'Nobody on the waitlist.')]));
+  $('testers-n').textContent = `(${testers.length})`;
+  $('testers').replaceChildren(...(testers.length ? testers.map((s) => line(s, [])) : [el('p', { class: 'empty' }, 'No testers yet.')]));
+}
+/** How many testers already share a sign-up's source, phone and state, said on its card: "4 testers so far". */
+let sofar = null;
+const heardKey = (s) => (s.heard || '').trim().toLowerCase();
+function count(rows, key) { const m = new Map(); for (const s of rows) m.set(key(s), (m.get(key(s)) ?? 0) + 1); return m; }
+const soFar = (n, what = '') => el('span', { class: 'so-far' }, ` · ${n ? plural(n, `${what}tester`) : `no ${what}testers`} so far`);
+/** Who they are: the testers, or everyone who signed up, by how they heard, phone and state. Its own redraw, so a
+ *  switch between the two leaves a decision's seconds to undo where they are. */
+function drawWho() {
+  const all = list.signups, testers = all.filter((s) => s.status === 'approved');
+  $('who').replaceChildren(
+    el('div', { class: 'seg', role: 'group', 'aria-label': 'Count' },
+      ['approved', 'all'].map((g) => el('button', { type: 'button', 'aria-pressed': String(group === g), onclick: () => { group = g; drawWho(); } },
+        g === 'approved' ? 'Testers' : 'Everyone'))),
+    breakdowns(group === 'approved' ? testers : all));
+}
+
+function breakdowns(rows) {
+  const tally = (key) => {
+    const m = new Map();
+    for (const s of rows) { const [k, label] = key(s); const e = m.get(k) ?? { label, n: 0 }; e.n++; m.set(k, e); }
+    return [...m.values()].sort((a, b) => b.n - a.n || a.label.localeCompare(b.label));
+  };
+  // (Each bar is its share of the whole group, with the count and the percentage: "4 · 22%", so too many of one kind shows.)
+  const bars = (items, top = 8) => {
+    const shown = items.slice(0, top), rest = items.slice(top).reduce((a, b) => a + b.n, 0);
+    if (rest) shown.push({ label: 'Others', n: rest });
+    const all = Math.max(1, rows.length);
+    return shown.length ? shown.map((i) => el('div', { class: 'row' }, el('span', { class: 'label', title: i.label }, i.label),
+      el('b', {}, `${i.n} · ${Math.round((i.n / all) * 100)}%`),
+      el('span', { class: 'bar' }, el('i', { style: `width:${Math.round((i.n / all) * 100)}%` })))) : [el('p', { class: 'empty' }, 'Nobody yet.')];
+  };
+  const heard = tally((s) => { const h = (s.heard || '').trim(); return h ? [heardKey(s), h] : ['', 'Not said']; });
+  const phones = tally((s) => [s.phone, PHONES[s.phone]]);
+  const computers = rows.filter((s) => s.computer).length;
+  const states = tally((s) => { const st = stateOf(s.place); return st ? [st, STATE_NAMES[st]] : ['?', 'Couldn\'t tell']; });
+  return el('div', { class: 'break' },
+    el('h3', {}, 'How they heard'), bars(heard),
+    el('h3', {}, 'Phone'), bars(phones), el('div', { class: 'sub' }, `${computers} would use a computer too.`),
+    el('h3', {}, 'State'), bars(states, 10));
+}
+
+/** Where, as they said it, and its state's name when it doesn't say it already: "72923 · Arkansas". */
+function placeSaid(place) {
+  const st = stateOf(place), p = (place || '').trim();
+  return st && !new RegExp(`\\b(${STATE_NAMES[st]}|${st})\\b`, 'i').test(p) ? `${p} · ${STATE_NAMES[st]}` : p;
+}
+/** A waiting sign-up in full, with its buttons. */
+function card(s, buttons) {
+  const box = el('article', { class: 'card', 'data-id': s.id },
+    el('div', { class: 'who' }, el('strong', {}, s.name), el('span', { class: 'when' }, when(s.at))),
+    el('dl', {},
+      el('dt', {}, 'Where'), el('dd', {}, placeSaid(s.place), stateOf(s.place) ? soFar(sofar.state.get(stateOf(s.place))) : null),
+      el('dt', {}, 'Phone'), el('dd', {}, phoneSaid(s), soFar(sofar.phone.get(s.phone), s.phone === 'android' || s.phone === 'iphone' ? `${PHONES[s.phone]} ` : '')),
+      el('dt', {}, 'Heard'), el('dd', {}, s.heard || 'Not said', s.heard ? soFar(sofar.heard.get(heardKey(s))) : null),
+      el('dt', {}, 'Planning'), el('dd', {}, s.planning || 'Not said'),
+      el('dt', {}, 'Email'), el('dd', {}, el('a', { href: `mailto:${s.email}` }, s.email))));
+  if (buttons.length) box.append(actions(s, buttons, box));
+  return box;
+}
+/** One already decided: a line, with what happened to their email. */
+function line(s, buttons) {
+  const n = el('div', { class: 'line', 'data-id': s.id },
+    el('div', { class: 'who' }, el('strong', {}, s.name), el('span', { class: 'when' }, s.byHand ? 'Let in by hand' : s.decided ? when(s.decided) : '')),
+    el('div', { class: 'meta' }, [placeSaid(s.place), phoneSaid(s), s.heard].filter(Boolean).join(' · ')),
+    s.email ? el('div', { class: 'meta' }, el('a', { href: `mailto:${s.email}` }, s.email)) : null,
+    s.code ? el('div', { class: 'meta' }, 'Code ', el('span', { class: 'code' }, s.code), s.used ? ' · signed in with it' : ' · not used yet') : null,
+    mailSaid(s));
+  if (buttons.length) n.append(actions(s, buttons, n));
+  return n;
+}
+function mailSaid(s) {
+  if (!s.mail) return null;
+  if (s.mail === 'failed') return el('div', { class: 'status bad' }, 'The email didn\'t go. ',
+    el('button', { type: 'button', onclick: async (ev) => {
+      ev.target.disabled = true;
+      try { const r = await call('admin_beta_resend', { p_id: s.id }); await load(); if (r === 'no-key') say(NO_KEY); } catch (e) { trouble(e); ev.target.disabled = false; }
+    } }, 'Send again'));
+  return el('div', { class: 'status' + (s.mail === 'sent' ? ' good' : '') }, s.mail === 'sent' ? 'Email sent' : 'Email sending…');
+}
+
+const NO_KEY = 'No email can go: the Resend key isn\'t in Supabase\'s Vault (resend_signup_alerts, as in 07-signup-alerts.sql). Nothing was decided.';
+/**
+ * A sign-up's buttons. One that sends an email waits a few seconds first, with Undo, since an email can't be taken
+ * back; the others act at once.
+ */
+function actions(s, buttons, box) {
+  const row = el('div', { class: 'actions' });
+  const decide = async (decision) => {
+    row.replaceChildren(el('div', { class: 'pending' }, el('span', {}, 'Saving…')));
+    try {
+      const r = await call('admin_beta_decide', { p_id: s.id, p_decision: decision });
+      if (!counting()) await load(); // (another still counting down: the list is drawn again after it)
+      if (r === 'no-key') say(NO_KEY);
+      else if (r === 'gone') say(`${s.name} isn't on the list any more.`);
+    } catch (e) { trouble(e); row.replaceChildren(...buttonsFor()); }
+  };
+  const buttonsFor = () => buttons.map(([label, decision, kind, waitSaid]) => el('button', { type: 'button', class: kind, onclick: () => {
+    if (!waitSaid) return decide(decision);
+    let left = UNDO_SECONDS;
+    const said = el('span', {}, `${waitSaid} ${left} s.`);
+    const undo = el('button', { type: 'button', onclick: () => { clearInterval(waits[s.id]); delete waits[s.id]; row.replaceChildren(...buttonsFor()); } }, 'Undo');
+    row.replaceChildren(el('div', { class: 'pending' }, said, undo));
+    waits[s.id] = setInterval(() => {
+      left--;
+      if (left > 0) { said.textContent = `${waitSaid} ${left} s.`; return; }
+      clearInterval(waits[s.id]); delete waits[s.id];
+      decide(decision);
+    }, 1000);
+  } }, label));
+  row.append(...buttonsFor());
+  return row;
+}
+
+// ---------- Adding a tester by hand ----------
+$('add-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const f = ev.target, b = f.querySelector('button'); b.disabled = true;
+  try {
+    const r = await call('admin_beta_add', { p_first_name: f.first_name.value, p_email: f.email.value, p_place: f.place.value,
+      p_phone: f.phone.value, p_computer: f.computer.checked, p_heard: f.heard.value });
+    const who = f.first_name.value.trim(), address = f.email.value.trim();
+    if (r === 'added' || r === 'on-list') { await load(); f.reset(); }
+    if (r === 'added') say(`${who} is counted as a tester.`, true);
+    else if (r === 'on-list') say(`${address} was on the list already: counted as a tester now, unless they were on the waitlist.`, true);
+    else say(`Check the ${r.replace('invalid: ', '')}.`);
+  } catch (e) { trouble(e); }
+  finally { b.disabled = false; }
+});
+
+show();
+if (session) load();
+</script>
+</body>
+</html>
