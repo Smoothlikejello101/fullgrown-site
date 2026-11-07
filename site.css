@@ -65,6 +65,19 @@ footer nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
   body { font-size: 16.5px; }
 }
 
+/* How it works: three of the app's screens in a row, the plan wide and the two phone screens beside it, at one
+   height; on a phone, the plan across the top and the two screens side by side under it. */
+.how { list-style: none; padding: 0; margin: 18px 0 22px; display: grid; grid-template-columns: 2.3fr 1fr 1fr; gap: 14px; align-items: start; }
+.how li { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.how a { display: block; border-radius: 10px; }
+.how img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); box-shadow: 0 6px 16px rgba(60, 40, 10, 0.12); }
+.how p { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-soft); }
+.how b { color: var(--ink); }
+@media (max-width: 640px) {
+  .how { grid-template-columns: 1fr 1fr; }
+  .how li:first-child { grid-column: 1 / -1; }
+}
+
 /* The beta sign-up form */
 form { display: grid; gap: 18px; margin-top: 20px; }
 label, legend { font-weight: 600; font-size: 15.5px; }
