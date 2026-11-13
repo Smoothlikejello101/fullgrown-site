@@ -1,3 +1,4 @@
+/* Linked as site.css?v=N from each page: raise N there with each change here, so a browser that kept the old file (10 minutes) fetches this one. */
 /* The pages beside the home page (privacy, terms, beta): the home page's paper, grid and type, set for reading. */
 :root {
   --paper: #ede0c8;
