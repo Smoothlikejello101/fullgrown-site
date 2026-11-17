@@ -1,0 +1,9 @@
+# fullgrown.garden: every page may be read.
+#
+# This file is here so a request for it is answered with this, not with
+# "not found". A server error on robots.txt tells crawlers the whole site
+# is closed (RFC 9309), and GitHub Pages once answered one with an error
+# (Nov 16, 2026).
+
+User-agent: *
+Disallow:
