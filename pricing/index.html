@@ -35,8 +35,26 @@
   .plan ul { padding-left: 20px; margin: 8px 0 0; }
   .plan li { font-size: 15.5px; margin: 5px 0; line-height: 1.45; }
   .plus-mark { color: var(--leaf-deep); }
+  /* Heirloom: the first thing on the page to catch the eye, in view without scrolling on a phone (Jason, Nov 20). */
+  .heirloom { --h-bg: #166534; --h-ink: #fffdf7; --h-soft: #dcfce7; --h-tag: #fde68a; --h-tag-ink: #3f2a06;
+    display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center;
+    margin: 6px 0 18px; padding: 18px 22px; border-radius: 14px; background: var(--h-bg); color: var(--h-ink);
+    box-shadow: 0 8px 22px rgba(22, 101, 52, 0.25); }
+  .heirloom .tag { grid-column: 1 / -1; justify-self: start; font: 600 12.5px/1 Inter, sans-serif; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 6px 10px; border-radius: 999px; background: var(--h-tag); color: var(--h-tag-ink); }
+  .heirloom .big { font: 500 46px/1 Fraunces, Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; }
+  .heirloom .big small { font: 400 17px/1 Inter, sans-serif; letter-spacing: 0; }
+  .heirloom p { margin: 0; color: var(--h-ink); font-size: 16px; line-height: 1.45; }
+  .heirloom p s { color: var(--h-soft); }
+  .heirloom a { color: var(--h-ink); white-space: nowrap; }
+  .plan .heirloom-line { margin: 0 0 6px; font-size: 15px; font-weight: 600; color: var(--leaf-deep); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .heirloom { --h-bg: #14532d; --h-soft: #bbf7d0; box-shadow: none; border: 1px solid #22c55e; }
+  }
   @media (max-width: 640px) {
     .plans { grid-template-columns: 1fr; }
+    .heirloom { grid-template-columns: 1fr; padding: 16px 18px; }
+    .heirloom .big { font-size: 40px; }
   }
 </style>
 </head>
@@ -46,6 +64,11 @@
 
   <main>
     <h1>Pricing</h1>
+    <section class="heirloom" aria-labelledby="heirloom-tag">
+      <span class="tag" id="heirloom-tag">Heirloom members</span>
+      <span class="big">$25<small> a year</small></span>
+      <p>Join in the first season, from launch through May 31, 2027, and get FullGrown Plus for <s>$35</s> $25 a year for as long as you stay subscribed. <a href="#heirloom">How it works</a></p>
+    </section>
     <p class="effective">FullGrown is free while it's in beta: everything in it, for everyone testing it. The prices below start when FullGrown opens to everyone.</p>
 
     <p>A first plan has everything it needs to work, for free: your yard, the plants that suit it, and every warning. FullGrown Plus is for the gardener who's in deeper: more plans, every device, and more foresight.</p>
@@ -72,6 +95,7 @@
       <section class="plan plus" aria-labelledby="plus">
         <h2 id="plus">FullGrown Plus<span class="plus-mark" aria-hidden="true"> +</span></h2>
         <p class="price">$35 a year <span>or $9 a month</span></p>
+        <p class="heirloom-line">Heirloom members: $25 a year</p>
         <p class="for">Everything in Free, and more garden.</p>
         <ul>
           <li>As many plans as you like: front and back yards, a second home, a “what if”</li>
@@ -86,7 +110,7 @@
     <h2>Try it first</h2>
     <p>FullGrown Plus starts with a 14-day trial of everything in it. No card needed: when the trial ends, you choose whether to pay.</p>
 
-    <h2>Heirloom members: $25 a year</h2>
+    <h2 id="heirloom">Heirloom members: $25 a year</h2>
     <p>Join FullGrown Plus in its first season, from launch through May 31, 2027, and you pay $25 a year instead of $35 for as long as you keep your subscription. If you stop, come back within 14 months to keep that price. It's yearly only.</p>
     <p>Beta testers whose feedback helps shape FullGrown get their first year of FullGrown Plus free after launch, then the Heirloom price.</p>
 
